@@ -1,21 +1,22 @@
 package uk.co.desirableobjects.imagecropper
 
 import grails.test.*
+import uk.co.desirableobjects.imagecropper.exception.MissingRequiredAttributeException
 
 class ImageCropperTagLibTests extends TagLibUnitTestCase {
 
     static final Map EXAMPLE_PARAMETERS = [myKey: 'myValue', myOtherKey: 5]
-    static final String DUMMY_PLUGIN_CONTEXT_PATH = 'plugins/my-plugin-1.0'
+    static final String DUMMY_PLUGIN_CONTEXT_PATH = 'plugins/image-cropper-1.0'
     static final String DUMMY_CALLBACK = "alert(filename+' yadda yadda')"
     static final Closure BLANK_TAG_BODY = { return "" }
+    static final String CROPPABLE_IMAGE_ID = 'myImageId'
 
     protected void setUp() {
         super.setUp()
-        //AjaxUploaderTagLib.metaClass.createLink = { attrs -> return "/file/upload" }
-
+        
         ImageCropperTagLib.metaClass.javascript = { attrs, body ->
             if (attrs.library) {
-                return """<script type="text/javascript" src="${attrs.plugin}/${attrs.library}"></script>"""
+                return """<script type="text/javascript" src="${attrs.plugin}/${attrs.library}.js"></script>"""
             }
             return """<script type="text/javascript">${body}</script>"""
         }
@@ -32,15 +33,82 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
 
         tagLib.head([:], BLANK_TAG_BODY)
 
-        assertContains """<script type="text/javascript" src="/plugins/my-plugin-1.0/my-plugin"></script>"""
+        assertContains """<script type="text/javascript" src="image-cropper/cropper.js"></script>"""
+
+    }
+
+    void testHeadTagIncludesCss() {
+
+        tagLib.head([:], BLANK_TAG_BODY)
+
+        assertContains '<style type="text/css" media="screen">'
+        assertContains "@import url( /${DUMMY_PLUGIN_CONTEXT_PATH}/css/cropper.css );"
+        assertContains '</style>'
+
+    }
+
+    void testExcludeCss() {
+
+        tagLib.head([css:'/myapp/mycss.css'], BLANK_TAG_BODY)
+
+        assertDoesNotContain '@import url( /css/cropper.css )'
+        assertContains '@import url( /myapp/mycss.css )'
+
+    }
+
+    void testAttachBasicCropper() {
+
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID], BLANK_TAG_BODY)
+
+        assertContains "Event.observe(document, 'dom:loaded', function() {"
+        assertContains "new Cropper.Img('${CROPPABLE_IMAGE_ID}',"
+        assertContains "{ onEndCrop: function(coords, dimensions) {  } }"
+
+    }
+
+    void testBasicCropperWithCustomCallback() {
+
+        String onEndCropFunction = "alert('Ended crop, selected area was '+coords+' new image size is '+dimensions)"
+
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID], {
+            return tagLib.onEndCrop([:], { return onEndCropFunction })
+        })
+
+        assertContains("{ onEndCrop: function(coords, dimensions) { ${onEndCropFunction} } }")
+
+    }
+
+    void testAttachCropperWithoutProvidingImageId() {
+
+        shouldFail(MissingRequiredAttributeException.class) {
+            tagLib.crop([:], BLANK_TAG_BODY)
+        }
+
+    }
+
+    void testOnEndCropTagCanOnlyBeCalledWithinCropperTag() {
+
+        shouldFail(IllegalStateException.class) {
+            tagLib.onEndCrop([:], BLANK_TAG_BODY)
+        }
+
+    }
+
+    void testEnsureStateIsResetAfterTag() {
+
+        testBasicCropperWithCustomCallback()
+
+        shouldFail(IllegalStateException.class) {
+            tagLib.onEndCrop([:], BLANK_TAG_BODY)
+        }
 
     }
 
     private assertContains(String expected) {
-        assertTrue tagLib.out.toString().contains(expected)
+        assert tagLib.out.toString().contains(expected)
     }
 
     private assertDoesNotContain(String unexpected) {
-        assertFalse tagLib.out.toString().contains(unexpected)
+        assert !tagLib.out.toString().contains(unexpected)
     }
 }
