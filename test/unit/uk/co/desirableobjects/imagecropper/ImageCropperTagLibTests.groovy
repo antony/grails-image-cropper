@@ -2,6 +2,7 @@ package uk.co.desirableobjects.imagecropper
 
 import grails.test.*
 import uk.co.desirableobjects.imagecropper.exception.MissingRequiredAttributeException
+import uk.co.desirableobjects.imagecropper.exception.InvalidAttributeException
 
 class ImageCropperTagLibTests extends TagLibUnitTestCase {
 
@@ -10,6 +11,17 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
     static final String DUMMY_CALLBACK = "alert(filename+' yadda yadda')"
     static final Closure BLANK_TAG_BODY = { return "" }
     static final String CROPPABLE_IMAGE_ID = 'myImageId'
+
+    static final Map<String, List<String>> OPTIONAL_ATTRIBUTES = [
+        minWidth: [],
+        maxWidth: [],
+        minHeight: [],
+        maxHeight: [],
+        displayOnInit: ['true', 'false'],
+        ratioDim: [],
+        captureKeys: [],
+        onLoadCoords: []
+    ]
 
     protected void setUp() {
         super.setUp()
@@ -97,11 +109,24 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
     void testEnsureStateIsResetAfterTag() {
 
         testBasicCropperWithCustomCallback()
+        testOnEndCropTagCanOnlyBeCalledWithinCropperTag()
 
-        shouldFail(IllegalStateException.class) {
-            tagLib.onEndCrop([:], BLANK_TAG_BODY)
+    }
+
+    void testAllowedParameter() {
+        shouldFail(InvalidAttributeException.class) {
+            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, minHeight:640], BLANK_TAG_BODY)
         }
+    }
 
+    void testUnallowedAttributeValue() {
+        shouldFail(InvalidAttributeException.class) {
+            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, displayOnInit:'biahh'], BLANK_TAG_BODY)
+        }
+    }
+
+    void testUnallowedAttribute() {
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, carnegie:'mellon'], BLANK_TAG_BODY)
     }
 
     private assertContains(String expected) {
