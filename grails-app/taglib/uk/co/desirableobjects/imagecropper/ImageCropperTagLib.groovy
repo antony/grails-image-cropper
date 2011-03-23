@@ -12,24 +12,24 @@ class ImageCropperTagLib {
     String currentImageId = null
 
     static final Map<String, List<String>> REQUIRED_ATTRIBUTES = [
-        imageId: [:]
+            imageId: [:]
     ]
 
     static final Map<String, List<String>> CONFIGURATION_ATTRIBUTES = [
-        minWidth: [:],
-        maxWidth: [:],
-        minHeight: [:],
-        maxHeight: [:],
-        displayOnInit: [allowed:['true', 'false'], depends:['minWidth', 'ratioDim']],
-        ratioDim: [:],
-        captureKeys: [allowed:['true', 'false']],
-        onloadCoords: [:]
+            minWidth: [:],
+            maxWidth: [:],
+            minHeight: [:],
+            maxHeight: [:],
+            displayOnInit: [allowed: ['true', 'false'], depends: ['minWidth', 'ratioDim']],
+            ratioDim: [:],
+            captureKeys: [allowed: ['true', 'false']],
+            onloadCoords: [:]
     ]
 
     def head = { attrs, body ->
-        out << g.javascript([library:'cropper', plugin:'image-cropper'], "")
+        out << g.javascript([library: 'cropper', plugin: 'image-cropper'], "")
         out << pluginContextPath
-        String cssPath = attrs.css ?: resource(dir:"${pluginContextPath}/css", file:'cropper.css')
+        String cssPath = attrs.css ?: resource(dir: "${pluginContextPath}/css", file: 'cropper.css')
         out << '<style type="text/css" media="screen">'
         out << "   @import url( ${cssPath} );"
         out << "</style>"
@@ -48,9 +48,9 @@ class ImageCropperTagLib {
                 new Cropper.Img('${currentImageId}',
                     { ${doParameters(attrs)}onEndCrop: function(coords, dimensions) { """ +
 
-                body()+
+                body() +
 
-        """ } }
+                """ } }
                 );
             } );
         """)
@@ -62,12 +62,12 @@ class ImageCropperTagLib {
 
         List<String> parameters = ['autoIncludeCSS: false']
         attrs.each { Entry attribute ->
-          if (CONFIGURATION_ATTRIBUTES.keySet().contains(attribute.key)) {
-           validateAttribute(attribute, attrs)
-           parameters << "${attribute.key}: ${attribute.value}"
-          } else {
-            validateRequiredAttribute(attribute)
-          }
+            if (CONFIGURATION_ATTRIBUTES.keySet().contains(attribute.key)) {
+                validateAttribute(attribute, attrs)
+                parameters << "${attribute.key}: ${attribute.value}"
+            } else {
+                validateRequiredAttribute(attribute)
+            }
         }
 
         String configuration = parameters.join(",")
@@ -75,16 +75,16 @@ class ImageCropperTagLib {
 
     }
 
-  private def validateRequiredAttribute(Entry attribute) {
-    if (!REQUIRED_ATTRIBUTES.keySet().contains(attribute.key)) {
-      throw new InvalidAttributeException(attribute.key as String)
+    private def validateRequiredAttribute(Entry attribute) {
+        if (!REQUIRED_ATTRIBUTES.keySet().contains(attribute.key)) {
+            throw new InvalidAttributeException(attribute.key as String)
+        }
     }
-  }
 
-  private def validateAttribute(Entry attribute, Map providedAttributes) {
+    private def validateAttribute(Entry attribute, Map providedAttributes) {
         validateAttributeDependencies(attribute, providedAttributes)
         validateAttributeValue(attribute)
-  }
+    }
 
     private def validateAttributeDependencies(Entry attribute, Map providedAttributes) {
         List depends = CONFIGURATION_ATTRIBUTES[attribute.key].depends
@@ -102,7 +102,7 @@ class ImageCropperTagLib {
         List allowedValues = CONFIGURATION_ATTRIBUTES[attribute.key].allowed
         if (allowedValues) {
             if (!allowedValues.contains(attribute.value)) {
-                throw new InvalidAttributeException(attribute.key, allowedValues)
+                throw new InvalidAttributeException(attribute.key as String, allowedValues)
             }
         }
     }
