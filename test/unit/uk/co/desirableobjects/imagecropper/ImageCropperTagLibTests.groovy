@@ -61,7 +61,7 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
 
         tagLib.crop([imageId:CROPPABLE_IMAGE_ID], BLANK_TAG_BODY)
 
-        assertContains "Event.observe(document, 'dom:loaded', function() {"
+        assertContains "Event.observe(window, 'load', function() {"
         assertContains "new Cropper.Img('${CROPPABLE_IMAGE_ID}',"
         assertContains "{ autoIncludeCSS: false, onEndCrop: function(coords, dimensions) {  } }"
 
@@ -72,7 +72,7 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
         String onEndCropFunction = "alert('Ended crop, selected area was '+coords+' new image size is '+dimensions)"
 
         tagLib.crop([imageId:CROPPABLE_IMAGE_ID], {
-            return tagLib.onEndCrop([:], { return onEndCropFunction })
+            return tagLib.onEndCrop([:], { onEndCropFunction })
         })
 
         assertContains("{ autoIncludeCSS: false, onEndCrop: function(coords, dimensions) { alert('Ended crop, selected area was '+coords+' new image size is '+dimensions) } }")

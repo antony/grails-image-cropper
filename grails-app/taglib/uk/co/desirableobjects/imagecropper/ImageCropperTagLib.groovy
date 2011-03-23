@@ -3,6 +3,7 @@ package uk.co.desirableobjects.imagecropper
 import uk.co.desirableobjects.imagecropper.exception.MissingRequiredAttributeException
 import java.util.Map.Entry
 import uk.co.desirableobjects.imagecropper.exception.InvalidAttributeException
+import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody
 
 class ImageCropperTagLib {
 
@@ -43,9 +44,13 @@ class ImageCropperTagLib {
         currentImageId = attrs.imageId
 
         out << g.javascript([:], """
-            Event.observe(document, 'dom:loaded', function() {
+            Event.observe(window, 'load', function() {
                 new Cropper.Img('${currentImageId}',
-                    { ${doParameters(attrs)}onEndCrop: function(coords, dimensions) { ${body()} } }
+                    { ${doParameters(attrs)}onEndCrop: function(coords, dimensions) { """ +
+
+                body()+
+
+        """ } }
                 );
             } );
         """)
@@ -88,7 +93,7 @@ class ImageCropperTagLib {
   def onEndCrop = { attrs, body ->
 
         if (currentImageId) {
-            body()
+            out << """${body()}"""
         } else {
             throw new IllegalStateException(":onEndCrop tags can only be used inside an enclosing :cropper tag.")
         }

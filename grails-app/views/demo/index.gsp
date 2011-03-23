@@ -11,7 +11,7 @@
     <img id="castle" src="${resource(dir:'images/cropper', file:'castleMed.jpg')}" alt="A medium sized castle" />
     <cropper:crop imageId="castle">
       <cropper:onEndCrop>
-        alert("yeah boi");
+        alert("Cropped!");
       </cropper:onEndCrop>
     </cropper:crop>
   </body>
