@@ -110,13 +110,13 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
     }
 
     void testAllowedAttribute() {
-        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, minHeight:640], BLANK_TAG_BODY)
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, minHeight:'640'], BLANK_TAG_BODY)
         assertContains('minHeight: 640')
     }
 
     void testInvalidAttributeValue() {
         shouldFail(InvalidAttributeException.class) {
-            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, displayOnInit:'biahh'], BLANK_TAG_BODY)
+            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, captureKeys:'biahh'], BLANK_TAG_BODY)
         }
     }
 
@@ -124,6 +124,16 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
         shouldFail(InvalidAttributeException.class) {
           tagLib.crop([imageId:CROPPABLE_IMAGE_ID, carnegie:'mellon'], BLANK_TAG_BODY)
         }
+    }
+
+    void testDisplayOnInitExcludedWhenNotUsed() {
+        shouldFail(InvalidAttributeException.class) {
+            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, displayOnInit:'true'], BLANK_TAG_BODY)
+        }
+    }
+
+    void testDisplayOnInitAllowedWhenDependenciesMet() {
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, displayOnInit:'true', minWidth:'32', minHeight:'32'], BLANK_TAG_BODY)
     }
 
     private assertContains(String expected) {

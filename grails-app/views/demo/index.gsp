@@ -8,7 +8,7 @@
     <cropper:head />
   </head>
   <body>
-    <img id="castle" src="${resource(dir:'images/cropper', file:'castleMed.jpg')}" alt="A medium sized castle" />
+    <img id="castle" src="${resource(dir:'images', file:'grails_logo.png')}" alt="A medium sized castle" />
     <cropper:crop imageId="castle">
       <cropper:onEndCrop>
         alert("Cropped!");

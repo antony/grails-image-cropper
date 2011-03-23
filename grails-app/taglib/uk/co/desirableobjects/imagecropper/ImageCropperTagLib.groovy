@@ -12,18 +12,18 @@ class ImageCropperTagLib {
     String currentImageId = null
 
     static final Map<String, List<String>> REQUIRED_ATTRIBUTES = [
-        imageId: []
+        imageId: [:]
     ]
 
     static final Map<String, List<String>> CONFIGURATION_ATTRIBUTES = [
-        minWidth: [],
-        maxWidth: [],
-        minHeight: [],
-        maxHeight: [],
-        displayOnInit: ['true', 'false'],
-        ratioDim: [],
-        captureKeys: [],
-        onLoadCoords: []
+        minWidth: [:],
+        maxWidth: [:],
+        minHeight: [:],
+        maxHeight: [:],
+        displayOnInit: [allowed:['true', 'false'], depends:['minWidth', 'ratioDim']],
+        ratioDim: [:],
+        captureKeys: [allowed:['true', 'false']],
+        onloadCoords: [:]
     ]
 
     def head = { attrs, body ->
@@ -63,7 +63,7 @@ class ImageCropperTagLib {
         List<String> parameters = ['autoIncludeCSS: false']
         attrs.each { Entry attribute ->
           if (CONFIGURATION_ATTRIBUTES.keySet().contains(attribute.key)) {
-           validateAttribute(attribute)
+           validateAttribute(attribute, attrs)
            parameters << "${attribute.key}: ${attribute.value}"
           } else {
             validateRequiredAttribute(attribute)
@@ -81,16 +81,33 @@ class ImageCropperTagLib {
     }
   }
 
-  private def validateAttribute(Entry attribute) {
-    List allowedValues = CONFIGURATION_ATTRIBUTES[attribute.key]
-    if (!allowedValues.isEmpty()) {
-      if (!allowedValues.contains(attribute.value)) {
-        throw new InvalidAttributeException(attribute.key, allowedValues)
-      }
-    }
+  private def validateAttribute(Entry attribute, Map providedAttributes) {
+        validateAttributeDependencies(attribute, providedAttributes)
+        validateAttributeValue(attribute)
   }
 
-  def onEndCrop = { attrs, body ->
+    private def validateAttributeDependencies(Entry attribute, Map providedAttributes) {
+        List depends = CONFIGURATION_ATTRIBUTES[attribute.key].depends
+        if (depends) {
+            String found = depends.find { String field ->
+                providedAttributes.containsKey(field)
+            }
+            if (!found) {
+                throw new InvalidAttributeException("Attribute ${attribute.key} requires you to specify at least one of the attributes: ${depends.toListString()}")
+            }
+        }
+    }
+
+    private def validateAttributeValue(Entry attribute) {
+        List allowedValues = CONFIGURATION_ATTRIBUTES[attribute.key].allowed
+        if (allowedValues) {
+            if (!allowedValues.contains(attribute.value)) {
+                throw new InvalidAttributeException(attribute.key, allowedValues)
+            }
+        }
+    }
+
+    def onEndCrop = { attrs, body ->
 
         if (currentImageId) {
             out << """${body()}"""
