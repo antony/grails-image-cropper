@@ -12,17 +12,6 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
     static final Closure BLANK_TAG_BODY = { return "" }
     static final String CROPPABLE_IMAGE_ID = 'myImageId'
 
-    static final Map<String, List<String>> OPTIONAL_ATTRIBUTES = [
-        minWidth: [],
-        maxWidth: [],
-        minHeight: [],
-        maxHeight: [],
-        displayOnInit: ['true', 'false'],
-        ratioDim: [],
-        captureKeys: [],
-        onLoadCoords: []
-    ]
-
     protected void setUp() {
         super.setUp()
         
@@ -113,20 +102,21 @@ class ImageCropperTagLibTests extends TagLibUnitTestCase {
 
     }
 
-    void testAllowedParameter() {
-        shouldFail(InvalidAttributeException.class) {
-            tagLib.crop([imageId:CROPPABLE_IMAGE_ID, minHeight:640], BLANK_TAG_BODY)
-        }
+    void testAllowedAttribute() {
+        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, minHeight:640], BLANK_TAG_BODY)
+        assertContains('minHeight: 640')
     }
 
-    void testUnallowedAttributeValue() {
+    void testInvalidAttributeValue() {
         shouldFail(InvalidAttributeException.class) {
             tagLib.crop([imageId:CROPPABLE_IMAGE_ID, displayOnInit:'biahh'], BLANK_TAG_BODY)
         }
     }
 
     void testUnallowedAttribute() {
-        tagLib.crop([imageId:CROPPABLE_IMAGE_ID, carnegie:'mellon'], BLANK_TAG_BODY)
+        shouldFail(InvalidAttributeException.class) {
+          tagLib.crop([imageId:CROPPABLE_IMAGE_ID, carnegie:'mellon'], BLANK_TAG_BODY)
+        }
     }
 
     private assertContains(String expected) {
