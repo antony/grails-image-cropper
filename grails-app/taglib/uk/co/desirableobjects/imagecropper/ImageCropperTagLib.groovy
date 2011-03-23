@@ -6,7 +6,7 @@ import uk.co.desirableobjects.imagecropper.exception.InvalidAttributeException
 
 class ImageCropperTagLib {
 
-    def namespace = "cropper"
+    static def namespace = "cropper"
 
     String currentImageId = null
 
@@ -27,6 +27,7 @@ class ImageCropperTagLib {
 
     def head = { attrs, body ->
         out << g.javascript([library:'cropper', plugin:'image-cropper'], "")
+        out << pluginContextPath
         String cssPath = attrs.css ?: resource(dir:"${pluginContextPath}/css", file:'cropper.css')
         out << '<style type="text/css" media="screen">'
         out << "   @import url( ${cssPath} );"
@@ -54,7 +55,7 @@ class ImageCropperTagLib {
 
     private String doParameters(attrs) {
 
-        List<String> parameters = []
+        List<String> parameters = ['autoIncludeCSS: false']
         attrs.each { Entry attribute ->
           if (CONFIGURATION_ATTRIBUTES.keySet().contains(attribute.key)) {
            validateAttribute(attribute)
