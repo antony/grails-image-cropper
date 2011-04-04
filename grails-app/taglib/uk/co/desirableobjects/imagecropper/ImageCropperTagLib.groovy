@@ -28,7 +28,6 @@ class ImageCropperTagLib {
 
     def head = { attrs, body ->
         out << g.javascript([library: 'cropper', plugin: 'image-cropper'], "")
-        out << pluginContextPath
         String cssPath = attrs.css ?: resource(dir: "${pluginContextPath}/css", file: 'cropper.css')
         out << '<style type="text/css" media="screen">'
         out << "   @import url( ${cssPath} );"
